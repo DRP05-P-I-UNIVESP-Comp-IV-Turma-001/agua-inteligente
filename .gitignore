@@ -1,0 +1,30 @@
+# Ambiente virtual
+venv/
+
+# Cache Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pyd.pyi
+
+# Streamlit
+.streamlit/
+
+# Notebooks
+.ipynb_checkpoints/
+
+# Build / dist
+build/
+dist/
+*.egg-info/
+
+# Testes e coverage (se usar)
+.pytest_cache/
+.coverage
+htmlcov/
+
+# SO / IDE
+.DS_Store
+Thumbs.db
+.vscode/
