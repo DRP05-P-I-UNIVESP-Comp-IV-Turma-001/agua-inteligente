@@ -1,5 +1,6 @@
 # Ambiente virtual
 venv/
+.venv/
 
 # Cache Python
 __pycache__/
@@ -28,6 +29,3 @@ htmlcov/
 .DS_Store
 Thumbs.db
 .vscode/
-
-
-requirements.txt
