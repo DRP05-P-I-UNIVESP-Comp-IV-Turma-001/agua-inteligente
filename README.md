@@ -4,76 +4,88 @@
 
 ![Arquitetura do Sistema Água Inteligente](docs/arquitetura_agua_inteligente.png)
 
-Bem-vindo ao projeto da **Turma 001 – UNIVESP (Ciência de Dados)**.
-O sistema acompanha a **vazão de água em tempo real**, detecta **anomalias** de consumo e exibe tudo em um **dashboard web** simples de usar.
+Bem-vindo ao projeto da **Turma 001 – UNIVESP (Ciência de Dados)**!
+Este sistema acompanha a **vazão de água em tempo real**, detecta **anomalias de consumo** e exibe tudo em um **dashboard web** intuitivo e fácil de usar.
 
-Este guia explica como **qualquer integrante do grupo** consegue rodar o sistema localmente e, opcionalmente, gerar um **executável (.exe)** para facilitar a visualização.
+O objetivo é permitir que **qualquer integrante do grupo** consiga rodar o sistema completo no próprio computador, **sem precisar configurar manualmente** o backend e o dashboard.
+Para isso, criamos o **launcher.py**, que executa tudo automaticamente — e também pode ser transformado em um **executável (.exe)** pronto para uso.
 
 ---
 
 ## ✅ Pré-requisitos
 
-No Windows, verifique se você tem:
+Antes de começar, confirme que você tem no seu Windows:
 
 * ✔ **VS Code** instalado
-* ✔ **Python 3.10+** instalado
+* ✔ **Python 3.10 ou superior** instalado
 * ✔ **Conta no GitHub**
-* ✔ **Internet funcionando** 👍
-
-Se tudo certo, prossiga.
+* ✔ **Conexão com a internet** 👍
 
 ---
 
-## 🚀 Instalação rápida (modo integrante do grupo)
+## 🚀 Instalação rápida (para integrantes do grupo)
 
-> Siga os passos na **ordem**.
+Siga os passos **nesta ordem**, sem pular nenhum!
+Esses passos funcionam para todos os membros do grupo.
 
-### 1) Baixar o projeto
+---
 
-Abra o **VS Code** → **View > Terminal** e rode:
+### 1️⃣ Baixar o projeto
+
+Abra o **VS Code** → menu **Exibir > Terminal**
+E digite:
 
 ```bash
 git clone https://github.com/DRP05-P-I-UNIVESP-Comp-IV-Turma-001/agua-inteligente.git
 cd agua-inteligente
 ```
 
-### 2) Criar e ativar o ambiente virtual
+---
+
+### 2️⃣ Criar e ativar o ambiente virtual
 
 ```bash
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 ```
 
-Se aparecer erro de permissão, rode:
+Se aparecer erro de permissão, digite:
 
 ```bash
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 ```
 
-e ative de novo o venv.
+Depois, **ative novamente o ambiente virtual**.
 
-### 3) Instalar dependências
+---
+
+### 3️⃣ Instalar as dependências
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4) Rodar o dashboard (com backend automático via launcher)
+Esse comando baixa e instala todas as bibliotecas que o sistema precisa, como **FastAPI**, **Streamlit**, **Uvicorn**, **Pandas**, entre outras.
 
-Opção simples para visualização:
+---
+
+### 4️⃣ Rodar o sistema completo (modo fácil)
+
+Depois que tudo estiver instalado, execute o **launcher.py**:
 
 ```bash
 python launcher.py
 ```
 
-O **launcher**:
+O **launcher** faz tudo automaticamente:
 
-1. Sobe o **backend FastAPI** local ([http://127.0.0.1:8000](http://127.0.0.1:8000))
+1. Sobe o **backend FastAPI** (servidor de dados)
 2. Aguarda o **/health** responder
-3. Abre o **Dashboard** no navegador ([http://localhost:8501](http://localhost:8501))
-4. Ao fechar o Dashboard, encerra o backend
+3. Abre o **Dashboard Streamlit** no navegador
+4. Exibe as informações de vazão e anomalias em tempo real
 
-> Dica: também é possível rodar manualmente (modo desenvolvedor), conforme seção abaixo.
+Se o navegador não abrir sozinho, acesse manualmente:
+👉 [http://localhost:8501](http://localhost:8501)
 
 ---
 
@@ -81,91 +93,76 @@ O **launcher**:
 
 ```
 agua_inteligente/
-├─ edge/               # Simulador de sensores
-├─ ingestion/          # API FastAPI + SQLite (data.db)
+├─ edge/               # Simulador de sensores (gera dados de teste)
+├─ ingestion/          # Backend FastAPI + Banco SQLite
 │  └─ main.py
-├─ analytics/          # Detecção de anomalias (z-score / IQR)
+├─ analytics/          # Detecção de anomalias (Z-score e IQR)
 │  ├─ processing.py
 │  └─ test_processing.py
-├─ dashboard/          # Interface Streamlit
+├─ dashboard/          # Interface Streamlit (gráficos e KPIs)
 │  ├─ app.py
-│  └─ config.py        # API_BASE e TIMEZONE (variáveis)
-├─ docs/               # Evidências e documentação
-├─ launcher.py         # Lançador (usado no .exe e para iniciar tudo)
-└─ requirements.txt
+│  └─ config.py        # Configuração de API e fuso horário
+├─ docs/               # Documentos, diagramas e prints
+├─ launcher.py         # Script que inicia tudo automaticamente
+├─ requirements.txt    # Lista de dependências
+└─ .venv/              # Ambiente virtual (não precisa subir pro GitHub)
 ```
 
 ---
 
-## 🧠 Módulo Analytics: como funciona
+## 🧠 Como o módulo Analytics funciona
 
-O dashboard permite escolher o **método de detecção**:
+O sistema analisa o histórico de medições e detecta **padrões anormais** de vazão usando dois métodos:
 
-* **Z-score (padrão):** estável para séries regulares
-* **IQR:** mais sensível a picos pontuais
+* **Z-score (padrão)** → estável para séries regulares
+* **IQR (Intervalo Interquartil)** → mais sensível a picos e variações bruscas
 
-Parâmetros ajustáveis na barra lateral:
+No dashboard, você pode ajustar:
 
-* **Tamanho da janela** (rolling window)
-* **Limiar Z** ou **Fator IQR**
-* **Janela temporal** e **limite de registros**
-
-Endpoint para consumo externo:
-
-```
-GET /analytics/anomalies
-```
-
-Retorna por anomalia:
-
-```json
-{
-  "meter_code": "SETOR-A-01",
-  "ts": "2025-11-02T16:05:00Z",
-  "flow_lpm": 22.15,
-  "zscore": 3.41,
-  "rolling_mean": 15.80,
-  "rolling_std": 1.86,
-  "is_anomaly": true
-}
-```
+* Tamanho da janela de análise
+* Limiar de detecção (Z ou IQR)
+* Número máximo de leituras exibidas
 
 ---
 
-## 👨‍💻 Modo desenvolvedor (rodar serviços separadamente)
+## 👨‍💻 Modo desenvolvedor (opcional)
 
-### A) Backend FastAPI
+Se quiser rodar os módulos separadamente:
+
+### A) Backend (FastAPI)
 
 ```bash
 uvicorn ingestion.main:app --reload
 ```
 
-Teste no navegador:
+Verifique no navegador:
 
 * `http://127.0.0.1:8000/health`
 * `http://127.0.0.1:8000/readings`
 * `http://127.0.0.1:8000/analytics/anomalies`
 
-### B) Dashboard Streamlit
+### B) Dashboard (Streamlit)
 
-Em outro terminal (com o venv ativo):
+Em outro terminal:
 
 ```bash
 streamlit run dashboard/app.py
 ```
 
-Acesse: `http://localhost:8501`
+Acesse: [http://localhost:8501](http://localhost:8501)
 
-### C) Variáveis de ambiente opcionais do Dashboard
+---
 
-No Windows PowerShell:
+## ⚙️ Variáveis de ambiente opcionais
+
+No PowerShell:
 
 ```powershell
 $env:AGUA_API_BASE="http://127.0.0.1:8000"
 $env:AGUA_TZ="America/Sao_Paulo"
 ```
 
-O arquivo `dashboard/config.py` lê:
+O arquivo `dashboard/config.py` usa essas variáveis automaticamente:
 
 ```python
 API_BASE = os.getenv("AGUA_API_BASE", "http://127.0.0.1:8000")
@@ -174,99 +171,91 @@ TIMEZONE = os.getenv("AGUA_TZ", "America/Sao_Paulo")
 
 ---
 
-## 🌐 Acessar de outro dispositivo na mesma rede
+## 🌐 Acessar em outro dispositivo
 
-O Streamlit mostra um **Network URL**. Exemplo:
+O Streamlit mostra um endereço de rede, como:
 
 ```
-http://192.168.15.8:8501
+Network URL: http://192.168.15.8:8501
 ```
 
-Abra no celular/notebook da mesma rede Wi-Fi para visualizar o painel.
+Acesse esse link de outro dispositivo na **mesma rede Wi-Fi** para visualizar o painel remotamente.
 
 ---
 
-## 🖥️ Gerar executável (.exe) com PyInstaller
+## 🖥️ Criar o executável (.exe)
 
-> Use esta opção quando quiser distribuir um arquivo único para o time testar o sistema sem precisar rodar comandos.
+> Use este modo quando quiser que o sistema rode com **dois cliques**, sem precisar abrir o VS Code.
 
-1. Instale o PyInstaller:
+1️⃣ Instale o PyInstaller:
 
 ```bash
 pip install pyinstaller
 ```
 
-2. Gere o executável a partir do `launcher.py`:
+2️⃣ Gere o executável com:
 
 ```bash
-pyinstaller --noconfirm --onefile --console ^
-  --name AguaInteligente ^
-  --add-data "dashboard;dashboard" ^
-  --add-data "ingestion;ingestion" ^
-  --add-data "analytics;analytics" ^
-  --collect-data "pydantic" ^
-  --collect-data "starlette" ^
-  --collect-data "uvicorn" ^
-  --collect-data "pandas" ^
-  --collect-data "numpy" ^
-  launcher.py
+pyinstaller -y .\AguaInteligente.spec
 ```
 
-3. Execute
+Esse comando cria o executável dentro da pasta `dist/`.
 
-* O `.exe` ficará em `dist\AguaInteligente.exe`
-* Dê **duplo clique** para abrir.
-* Ele iniciará o backend, aguardará o `/health` e abrirá o Dashboard no navegador.
-* Ao fechar o Dashboard, o backend é encerrado.
+3️⃣ Para rodar:
 
-> Observações: antivírus corporativos podem sinalizar executáveis “one-file”. Se acontecer, compartilhe internamente por canal confiável ou use o lançador `.bat`.
+* Abra o arquivo `dist/AguaInteligente.exe`
+* Ele iniciará o backend e o dashboard automaticamente
+* Se o navegador não abrir, acesse: [http://localhost:8501](http://localhost:8501)
 
----
-
-## 🔍 O que você verá no Dashboard
-
-* **KPIs**: sensores ativos, sensores únicos, vazão média, máxima e total de leituras
-* **Gráfico temporal** de vazão
-* **Alertas Recentes** com as anomalias mais novas
-* **Status dos Hidrômetros**:
-
-  * 🔺 possui anomalias
-  * ✅ normal
+🧠 *Importante:* Se o antivírus bloquear o `.exe`, use a opção “Permitir sempre” — é comum com executáveis gerados localmente.
 
 ---
 
-## 🧾 Roadmap (próximas etapas)
+## 🔍 O que aparece no Dashboard
 
-* [x] Dashboard básico com KPIs e gráficos
-* [x] Backend FastAPI com banco SQLite
-* [x] Detecção de anomalias (Z-score e IQR)
-* [x] Endpoint `/analytics/anomalies` integrado
-* [x] Lançador e empacotamento `.exe`
-* [ ] Métricas adicionais por setor e sazonalidade
-* [ ] Alertas visuais no gráfico (pontos em destaque)
-* [ ] Exportação de relatórios (CSV/PDF)
-* [ ] Integração com sensores reais no módulo `edge/`
+* **Indicadores (KPIs)**: sensores ativos, total de leituras, média, pico e somatório
+* **Gráfico temporal** da vazão
+* **Alertas recentes** de anomalias
+* **Status dos hidrômetros**:
+
+  * 🔺 Vermelho → consumo fora do padrão
+  * ✅ Verde → normal
+
+---
+
+## 🧾 Próximas etapas do projeto (Roadmap)
+
+| Etapa                                           | Status               |
+| ----------------------------------------------- | -------------------- |
+| Dashboard básico com KPIs e gráficos            | ✅ Concluído          |
+| Backend FastAPI com banco SQLite                | ✅ Concluído          |
+| Detecção de anomalias (Z-score e IQR)           | ✅ Concluído          |
+| Launcher automático e empacotamento `.exe`      | ✅ Concluído          |
+| Métricas por setor e sazonalidade               | ⏳ Em desenvolvimento |
+| Alertas visuais no gráfico                      | ⏳ Planejado          |
+| Exportação de relatórios (CSV/PDF)              | ⏳ Planejado          |
+| Integração com sensores reais no módulo `edge/` | ⏳ Planejado          |
 
 ---
 
 ## 🧯 Ajuda rápida
 
-| Situação                         | O que fazer                                                                                         |
-| -------------------------------- | --------------------------------------------------------------------------------------------------- |
-| O painel não abre                | Verifique se o backend responde em `/health`. Se usou o `launcher.py`, ele aguarda automaticamente. |
-| Erro de permissão ao ativar venv | Rode `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` e ative novamente.                |
-| Tabela não aparece               | Aguarde o simulador/ingestão gerar leituras.                                                        |
-| Aviso “use_container_width”      | Já foi corrigido para `width='stretch'`. Atualize o arquivo se necessário.                          |
-
-Se travar, feche os terminais e reabra o VS Code. Persistindo, avise no grupo. 😅
+| Situação                           | O que fazer                                                                        |
+| ---------------------------------- | ---------------------------------------------------------------------------------- |
+| O painel não abre                  | Verifique se o backend responde em `/health`. O launcher faz isso automaticamente. |
+| Erro de permissão ao ativar o venv | Use `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass`.                  |
+| A tabela está vazia                | Aguarde alguns segundos — o simulador de sensores vai gerar dados.                 |
+| Erro no `.exe`                     | Verifique se o antivírus não bloqueou o arquivo.                                   |
+| O `.exe` fecha sozinho             | Execute via PowerShell para ver a mensagem de erro.                                |
 
 ---
 
 ## 🤝 Equipe
 
-* Magno Bruno Camargo Proença
-* Mauro Sergio Bouwman Leão
-* Bruno Luiz Silva Marchi
-* Beatriz Aiello Yazbek
+* **Magno Bruno Camargo Proença**
+* **Mauro Sergio Bouwman Leão**
+* **Bruno Luiz Silva Marchi**
+* **Beatriz Aiello Yazbek**
 
+---
 
