@@ -1,31 +1,43 @@
-# Ambiente virtual
-venv/
-.venv/
-
-# Cache Python
+@"
+# --- Python ---
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-*.pyd.pyi
-
-# Streamlit
-.streamlit/
-
-# Notebooks
+*.egg-info/
+.eggs/
+.pytest_cache/
 .ipynb_checkpoints/
 
-# Build / dist
-build/
-dist/
-*.egg-info/
+# virtualenvs
+.venv/
+.venv.devtest/
+venv/
+env/
 
-# Testes e coverage (se usar)
-.pytest_cache/
-.coverage
-htmlcov/
-
-# SO / IDE
+# --- IDEs/OS ---
+.vscode/
+.idea/
 .DS_Store
 Thumbs.db
-.vscode/
+
+# --- Streamlit / PyInstaller ---
+.streamlit/cache/
+.streamlit/static/**/__pycache__/
+build/
+dist/
+*.spec
+
+# --- Logs temporários ---
+*.log
+logs/
+
+# --- Dados sensíveis (ajuste se existir) ---
+.env
+.env.*
+*.sqlite3
+*.db
+
+# --- OneDrive artefatos de sistema ---
+~$*
+"@ | Out-File -Encoding utf8 ".gitignore"
